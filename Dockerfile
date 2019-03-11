@@ -1,9 +1,9 @@
 FROM ubuntu:18.04
 
 ENV JAVA_VERSION=8 \
-    JAVA_UPDATE=181 \
-    JAVA_BUILD=13 \
-    JAVA_PATH=96a7b8442fe848ef90c96a2fad6ed6d1 \
+    JAVA_UPDATE=201 \
+    JAVA_BUILD=09 \
+    JAVA_PATH=42970487e3af4f5aa5bca3f542482c60 \
     JAVA_HOME="/usr/lib/jvm/default-jvm"
 
 RUN apt-get update \
