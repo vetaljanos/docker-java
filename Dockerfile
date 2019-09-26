@@ -1,50 +1,16 @@
-FROM ubuntu:18.04
+FROM debian:10 as builder
+
+COPY java8.tar.gz /
+RUN tar -zxf /java8.tar.gz && rm -rf /java8.tar.gz
+
+FROM debian:10
 
 ENV JAVA_VERSION=8 \
-    JAVA_UPDATE=201 \
-    JAVA_BUILD=09 \
-    JAVA_PATH=42970487e3af4f5aa5bca3f542482c60 \
-    JAVA_HOME="/usr/lib/jvm/default-jvm"
+    JAVA_HOME="/usr/lib/jvm/java8" \
+    DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
   && apt-get upgrade -y \
-  && apt-get install ca-certificates curl unzip -y --no-install-recommends 
+  && apt-get install ca-certificates -y --no-install-recommends
 
-RUN mkdir -p /usr/lib/jvm \
-  && curl --silent --location --retry 3 \
-    --header "Cookie: oraclelicense=accept-securebackup-cookie;" \
-    http://download.oracle.com/otn-pub/java/jdk/"${JAVA_VERSION}"u"${JAVA_UPDATE}"-b"${JAVA_BUILD}"/"${JAVA_PATH}"/jdk-"${JAVA_VERSION}"u"${JAVA_UPDATE}"-linux-x64.tar.gz \
-    | tar xz -C /usr/lib/jvm \
-  && ln -s "/usr/lib/jvm/jdk1.${JAVA_VERSION}.0_${JAVA_UPDATE}" "$JAVA_HOME" \
-  && rm -rf "$JAVA_HOME/"*src.zip \
-  && rm -rf "$JAVA_HOME/lib/missioncontrol" \
-           "$JAVA_HOME/lib/visualvm" \
-           "$JAVA_HOME/lib/"*javafx* \
-           "$JAVA_HOME/jre/lib/plugin.jar" \
-           "$JAVA_HOME/jre/lib/ext/jfxrt.jar" \
-           "$JAVA_HOME/jre/bin/javaws" \
-           "$JAVA_HOME/jre/lib/javaws.jar" \
-           "$JAVA_HOME/jre/lib/desktop" \
-           "$JAVA_HOME/jre/plugin" \
-           "$JAVA_HOME/jre/lib/"deploy* \
-           "$JAVA_HOME/jre/lib/"*javafx* \
-           "$JAVA_HOME/jre/lib/"*jfx* \
-           "$JAVA_HOME/jre/lib/amd64/libdecora_sse.so" \
-           "$JAVA_HOME/jre/lib/amd64/"libprism_*.so \
-           "$JAVA_HOME/jre/lib/amd64/libfxplugins.so" \
-           "$JAVA_HOME/jre/lib/amd64/libglass.so" \
-           "$JAVA_HOME/jre/lib/amd64/libgstreamer-lite.so" \
-           "$JAVA_HOME/jre/lib/amd64/"libjavafx*.so \
-           "$JAVA_HOME/jre/lib/amd64/"libjfx*.so \
-  && curl -o /tmp/jce_policy-${JAVA_VERSION}.zip --silent --location --retry 3 \
-    --header "Cookie: oraclelicense=accept-securebackup-cookie;" \
-    http://download.oracle.com/otn-pub/java/jce/${JAVA_VERSION}/jce_policy-${JAVA_VERSION}.zip \
-  && unzip -jo -d "${JAVA_HOME}/jre/lib/security" /tmp/jce_policy-${JAVA_VERSION}.zip \
-  && rm "${JAVA_HOME}/jre/lib/security/README.txt" \
-  && apt-get autoclean && apt-get --purge -y autoremove \
-  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-RUN update-alternatives --install "/usr/bin/java" "java" "${JAVA_HOME}/bin/java" 1 && \
-  update-alternatives --install "/usr/bin/javaws" "javaws" "${JAVA_HOME}/bin/javaws" 1 && \
-  update-alternatives --set java "${JAVA_HOME}/bin/java" && \
-  update-alternatives --set javaws "${JAVA_HOME}/bin/javaws"
+COPY --from=builder /java8 $JAVA_HOME
